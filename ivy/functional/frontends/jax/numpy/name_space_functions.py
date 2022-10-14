@@ -24,6 +24,10 @@ def all(a, axis=None, out=None, keepdims=False, *, where=False):
     return ivy.all(a, axis=axis, keepdims=keepdims, out=out)
 
 
+def argmax(a, axis=None, out=None, keepdims=None):
+    return ivy.argmax(a, axis=axis, keepdims=keepdims, out=out)
+
+
 def _compute_allclose_with_tol(input, other, rtol, atol):
     return ivy.all(
         ivy.less_equal(
@@ -130,6 +134,10 @@ def reshape(a, newshape, order="C"):
     return ivy.reshape(a, newshape)
 
 
+def uint16(x):
+    return ivy.astype(x, ivy.uint16)
+
+
 @inputs_to_ivy_arrays
 def var(a, axis=None, dtype=None, out=None, ddof=0, keepdims=False, *, where=None):
     a = ivy.array(a)
@@ -155,3 +163,38 @@ def arctan2(x1, x2):
 @inputs_to_ivy_arrays
 def cos(x):
     return ivy.cos(x)
+
+
+@inputs_to_ivy_arrays
+def cosh(x):
+    return ivy.cosh(x)
+
+
+@inputs_to_ivy_arrays
+def tan(x):
+    return ivy.tan(x)
+
+
+@inputs_to_ivy_arrays
+def tanh(x):
+    return ivy.tanh(x)
+
+
+@inputs_to_ivy_arrays
+def sinh(x):
+    return ivy.sinh(x)
+
+
+@inputs_to_ivy_arrays
+def sin(x):
+    return ivy.sin(x)
+
+
+@inputs_to_ivy_arrays
+def fmax(x1, x2):
+    ret = ivy.where(
+        ivy.bitwise_or(ivy.greater(x1, x2), ivy.isnan(x2)),
+        x1,
+        x2,
+    )
+    return ret
