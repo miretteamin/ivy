@@ -30,7 +30,7 @@ class ArrayWithLayers(abc.ABC):
         weight
             The weight matrix. *[outer_batch_shape,out_features,in_features]*
         bias
-            The bias vector, default is None. *[outer_batch_shape,out_features]*
+            The bias vector, default is ``None``. *[outer_batch_shape,out_features]*
         out
             optional output array, for writing the result to. It must have a shape
             that the inputs broadcast to.
@@ -78,6 +78,23 @@ class ArrayWithLayers(abc.ABC):
             prob,
             scale=scale,
             dtype=dtype,
+            out=out,
+        )
+
+    def dropout1d(
+        self: ivy.Array,
+        prob: float,
+        /,
+        *,
+        training: bool = True,
+        data_format: str = "NWC",
+        out: Optional[ivy.Array] = None,
+    ) -> ivy.Array:
+        return ivy.dropout1d(
+            self._data,
+            prob,
+            training=training,
+            data_format=data_format,
             out=out,
         )
 

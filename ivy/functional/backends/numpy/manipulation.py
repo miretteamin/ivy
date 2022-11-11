@@ -19,7 +19,11 @@ def _flat_array_to_1_dim_array(x):
 
 
 def concat(
-    xs: List[np.ndarray], /, *, axis: int = 0, out: Optional[np.ndarray] = None
+    xs: Union[Tuple[np.ndarray, ...], List[np.ndarray]],
+    /,
+    *,
+    axis: Optional[int] = 0,
+    out: Optional[np.ndarray] = None,
 ) -> np.ndarray:
     is_tuple = type(xs) is tuple
     if axis is None:
@@ -34,7 +38,7 @@ def concat(
     highest_dtype = xs[0].dtype
     for i in xs:
         highest_dtype = ivy.as_native_dtype(ivy.promote_types(highest_dtype, i.dtype))
-    return ret.astype(highest_dtype)
+    return ivy.astype(ret, highest_dtype, copy=False)
 
 
 concat.support_native_out = True

@@ -1,43 +1,5 @@
 import ivy
-
-
-def conv2d(input, weight, bias=None, stride=1, padding=0, dilation=1, groups=1):
-    in_channel = input.shape[1]
-    ivy.assertions.check_equal(
-        in_channel % groups, 0, message="in_channels must be divisible by groups"
-    )
-    out_channel = weight.shape[0]
-    ivy.assertions.check_equal(
-        out_channel % groups, 0, message="out_channel must be divisible by groups"
-    )
-    if isinstance(padding, str):
-        padding = padding.upper()
-    else:
-        if type(padding) == int:
-            input = ivy.zero_pad(
-                input,
-                pad_width=[(0, 0), (0, 0), (padding, padding), (padding, padding)],
-            )
-        else:
-            h_pad, w_pad = padding
-            input = ivy.zero_pad(
-                input, pad_width=[(0, 0), (0, 0), (h_pad, h_pad), (w_pad, w_pad)]
-            )
-        padding = "VALID"
-
-    weight = ivy.permute_dims(weight, axes=(2, 3, 1, 0))
-    ret = ivy.conv(
-        input,
-        weight,
-        stride,
-        padding,
-        data_format="channel_first",
-        dilations=dilation,
-        feature_group_count=groups,
-    )
-    if bias is not None:
-        return ivy.add(ret, ivy.expand_dims(bias, axis=(0, 2, 3)))
-    return ret
+from ivy.functional.frontends.torch.func_wrapper import to_ivy_arrays_and_back
 
 
 def _div_rtn(x, y):
@@ -48,6 +10,7 @@ def _div_rtn(x, y):
     return q
 
 
+@to_ivy_arrays_and_back
 def unfold(input, kernel_size, dilation=1, padding=0, stride=1):
 
     kernel_size = ivy.repeat(ivy.asarray(kernel_size), 2)[:2]
@@ -168,6 +131,7 @@ def unfold(input, kernel_size, dilation=1, padding=0, stride=1):
     return output
 
 
+@to_ivy_arrays_and_back
 def fold(input, output_size, kernel_size, dilation=1, padding=0, stride=1):
 
     output_size = ivy.repeat(ivy.asarray(output_size), 2)[:2]

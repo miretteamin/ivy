@@ -1049,35 +1049,6 @@ def bitwise_and(
         a: ivy.array([True, False]),
         b: ivy.array([False, True])
     }
-
-    Instance Method Examples
-    ------------------------
-
-    Using :class:`ivy.Array` instance method:
-
-    >>> x = ivy.array([True, False])
-    >>> y = ivy.array([True, True])
-    >>> x.bitwise_and(y, out=y)
-    >>> print(y)
-    ivy.array([ True, False])
-
-    >>> x = ivy.array([[7],[8],[9]])
-    >>> y = ivy.native_array([[10],[11],[12]])
-    >>> z = x.bitwise_and(y)
-    >>> print(z)
-    ivy.array([[2],[8],[8]])
-
-    Using :class:`ivy.Container` instance method:
-
-    >>> x = ivy.Container(a=ivy.array([True, True]), b=ivy.array([False, True]))
-    >>> y = ivy.Container(a=ivy.array([False, True]), b=ivy.array([False, True]))
-    >>> x.bitwise_and(y, out=y)
-    >>> print(y)
-    {
-        a: ivy.array([False, True]),
-        b: ivy.array([False, True])
-    }
-
     """
     return ivy.current_backend(x1, x2).bitwise_and(x1, x2, out=out)
 
@@ -1494,27 +1465,6 @@ def bitwise_xor(
     a: ivy.array([-79, 24])
     }
 
-    Instance Method Examples
-    ------------------------
-
-    Using :class:`ivy.Array` instance method:
-
-    >>> a = ivy.array([[89, 51, 32], [14, 18, 19]])
-    >>> b = ivy.array([[[19, 26, 27], [22, 23, 20]]])
-    >>> y = a.bitwise_xor(b)
-    >>> print(y)
-    ivy.array([[[74,41,59],[24,5,7]]])
-
-    Using :class:`ivy.Container` instance method:
-
-    >>> x = ivy.Container(a = ivy.array([89]))
-    >>> b = ivy.array([90])
-    >>> y = ivy.Container(a = ivy.array([12]))
-    >>> b = ivy.array([78])
-    >>> z = x.bitwise_xor(y)
-    >>> print(z)
-    {a:ivy.array([85])}
-
     Operator Examples
     -----------------
 
@@ -1529,9 +1479,7 @@ def bitwise_xor(
     With :class:`ivy.Container` instances:
 
     >>> x = ivy.Container(a = ivy.array([89]))
-    >>> b = ivy.array([90])
     >>> y = ivy.Container(a = ivy.array([12]))
-    >>> b = ivy.array([78])
     >>> z = x ^ y
     >>> print(z)
     {a:ivy.array([85])}
@@ -2758,11 +2706,16 @@ def multiply(
     ----------
     x1
         first input array. Should have a numeric data type.
+
     x2
-        second input array. Must be compatible with ``x1`` (see  ref:`Broadcasting`).
-        Should have a numeric data type.
+        second input array. Should have a numeric data type.
+        Must be compatible with ``x1``
+        The condition for compatibility is Broadcasting :  ``x1.shape!=x2.shape`` .
+        The arrays must be boradcastble to get a common shape for the output.
+
+
     out
-        optional output array, for writing the result to. It must have a shape that the
+        optional output array, for writing the array result to. It must have a shape that the
         inputs broadcast to.
 
 
@@ -2773,7 +2726,7 @@ def multiply(
 
     Both the description and the type hints above assumes an array input for simplicity,
     but this function is *nestable*, and therefore also accepts :class:`ivy.Container`
-    instances in place of any of the arguments
+    instances in place of any of the arguments.
 
     Returns
     -------
@@ -2781,6 +2734,31 @@ def multiply(
         an array containing the element-wise products. The returned array must have a
         data type determined by :ref:`Type Promotion Rules`.
 
+    Examples
+    --------
+    With :class:`ivy.Array` inputs:
+
+    >>> x1 = ivy.array([3., 5., 7.])
+    >>> x2 = ivy.array([4., 6., 8.])
+    >>> y = ivy.multiply(x1, x2)
+    >>> print(y)
+    ivy.array([12., 30., 56.])
+
+    With :class:`ivy.NativeArray` inputs:
+
+    >>> x1 = ivy.native_array([1., 3., 9.])
+    >>> x2 = ivy.native_array([4., 7.2, 1.])
+    >>> y = ivy.multiply(x1, x2)
+    >>> print(y)
+    ivy.array([ 4. , 21.6,  9. ])
+
+    With mixed :class:`ivy.Array` and :class:`ivy.NativeArray` inputs:
+
+    >>> x1 = ivy.array([8., 6., 7.])
+    >>> x2 = ivy.native_array([1., 2., 3.])
+    >>> y = ivy.multiply(x1, x2)
+    >>> print(y)
+    ivy.array([ 8., 12., 21.])
     """
     return ivy.current_backend(x1, x2).multiply(x1, x2, out=out)
 
@@ -4270,8 +4248,8 @@ def negative(
 @handle_nestable
 @handle_exceptions
 def not_equal(
-    x1: Union[float, ivy.Array, ivy.NativeArray],
-    x2: Union[float, ivy.Array, ivy.NativeArray],
+    x1: Union[float, ivy.Array, ivy.NativeArray, ivy.Container],
+    x2: Union[float, ivy.Array, ivy.NativeArray, ivy.Container],
     /,
     *,
     out: Optional[ivy.Array] = None,
@@ -4781,7 +4759,7 @@ def remainder(
         divisor input array. Must be compatible with ``x1`` (see  ref:`Broadcasting`).
         Should have a numeric data type.
     modulus
-        whether to compute the modulus instead of the remainder. Default is True.
+        whether to compute the modulus instead of the remainder. Default is ``True``.
     out
         optional output array, for writing the result to. It must have a shape that the
         inputs broadcast to.
@@ -5700,7 +5678,7 @@ def trunc(
     Returns
     -------
     ret
-        an array containing the values before the decimal point for each element ``x``.
+        an array containing the rounded result for each element in ``x``.
         The returned array must have the same data type as ``x``.
 
 
@@ -5713,6 +5691,43 @@ def trunc(
     but this function is *nestable*, and therefore also accepts :class:`ivy.Container`
     instances in place of any of the arguments
 
+    Examples
+    --------
+    With :class:`ivy.Array` input:
+
+    >>> x = ivy.array([-1, 0.54, 3.67, -0.025])
+    >>> y = ivy.trunc(x)
+    >>> print(y)
+    ivy.array([-1.,  0.,  3., -0.])
+
+    >>> x = ivy.array([0.56, 7, -23.4, -0.0375])
+    >>> ivy.trunc(x, out=x)
+    >>> print(x)
+    ivy.array([  0.,   7., -23.,  -0.])
+
+    >>> x = ivy.array([[0.4, -8, 0.55], [0, 0.032, 2]])
+    >>> y = ivy.zeros([2,3])
+    >>> ivy.trunc(x, out=y)
+    >>> print(y)
+    ivy.array([[ 0., -8.,  0.],
+           [ 0.,  0.,  2.]])
+
+    With :class:`ivy.NativeArray` input:
+
+    >>> x = ivy.native_array([0.34, -6., 0.09, 25.4])
+    >>> y = ivy.trunc(x)
+    >>> print(y)
+    ivy.array([ 0., -6.,  0., 25.])
+
+    With :class:`ivy.Container` input:
+
+    >>> x = ivy.Container(a=ivy.array([-0.25, 4, 1.3]), b=ivy.array([12, -3.5, 1.234]))
+    >>> y = ivy.trunc(x)
+    >>> print(y)
+    {
+        a: ivy.array([-0., 4., 1.]),
+        b: ivy.array([12., -3., 1.])
+    }
     """
     return ivy.current_backend(x).trunc(x, out=out)
 
@@ -5759,7 +5774,7 @@ def maximum(
     x2: Union[ivy.Array, ivy.NativeArray, Number],
     /,
     *,
-    use_where: bool = False,
+    use_where: bool = True,
     out: Optional[ivy.Array] = None,
 ) -> ivy.Array:
     """Returns the max of x1 and x2 (i.e. x1 > x2 ? x1 : x2) element-wise.
@@ -5772,7 +5787,7 @@ def maximum(
         Tensor containing maximum values, must be broadcastable to x1.
     use_where
         Whether to use :func:`where` to calculate the maximum. If ``False``, the maximum
-        is calculated using the ``(x + y + |x - y|)/2`` formula. Default is ``False``.
+        is calculated using the ``(x + y + |x - y|)/2`` formula. Default is ``True``.
     out
         optional output array, for writing the result to. It must have a shape that the
         inputs broadcast to.
@@ -5846,7 +5861,7 @@ def minimum(
     x2: Union[ivy.Array, ivy.NativeArray],
     /,
     *,
-    use_where: bool = False,
+    use_where: bool = True,
     out: Optional[ivy.Array] = None,
 ) -> ivy.Array:
     """Returns the min of x1 and x2 (i.e. x1 < x2 ? x1 : x2) element-wise.
@@ -5859,7 +5874,7 @@ def minimum(
         Tensor containing minimum values, must be broadcastable to x1.
     use_where
         Whether to use :func:`where` to calculate the minimum. If ``False``, the minimum
-        is calculated using the ``(x + y - |x - y|)/2`` formula. Default is ``False``.
+        is calculated using the ``(x + y - |x - y|)/2`` formula. Default is ``True``.
     out
         optional output array, for writing the result to. It must have a shape that the
         inputs broadcast to.

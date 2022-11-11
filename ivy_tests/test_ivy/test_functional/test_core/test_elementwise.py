@@ -59,6 +59,7 @@ def test_abs(
 @given(
     dtype_and_x=helpers.dtype_and_values(
         available_dtypes=helpers.get_dtypes("float"),
+        min_value=1,
         large_abs_safety_factor=4,
         small_abs_safety_factor=4,
     ),
@@ -1656,8 +1657,9 @@ def pow_helper(draw, available_dtypes=None):
     dtype1, x1 = draw(
         helpers.dtype_and_values(
             available_dtypes=available_dtypes,
-            small_abs_safety_factor=4,
-            large_abs_safety_factor=4,
+            small_abs_safety_factor=12,
+            large_abs_safety_factor=12,
+            safety_factor_scale="log",
         )
     )
     dtype1 = dtype1[0]

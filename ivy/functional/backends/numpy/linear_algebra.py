@@ -11,7 +11,7 @@ import numpy as np
 import ivy
 from ivy import inf
 from ivy.func_wrapper import with_unsupported_dtypes
-from ivy.functional.backends.numpy.helpers import _handle_0_dim_output
+from ivy.functional.backends.numpy.helpers import _scalar_output_to_0d_array
 from . import backend_version
 
 
@@ -21,7 +21,7 @@ from . import backend_version
 
 @with_unsupported_dtypes({"1.23.0 and below": ("float16",)}, backend_version)
 def cholesky(
-    x: np.ndarray, /, *, upper: Optional[bool] = False, out: Optional[np.ndarray] = None
+    x: np.ndarray, /, *, upper: bool = False, out: Optional[np.ndarray] = None
 ) -> np.ndarray:
     if not upper:
         ret = np.linalg.cholesky(x)
@@ -45,35 +45,10 @@ def cross(
     return np.cross(a=x1, b=x2, axisa=axisa, axisb=axisb, axisc=axisc, axis=axis)
 
 
-@_handle_0_dim_output
+@_scalar_output_to_0d_array
 @with_unsupported_dtypes({"1.23.0 and below": ("float16",)}, backend_version)
 def det(x: np.ndarray, /, *, out: Optional[np.ndarray] = None) -> np.ndarray:
     return np.linalg.det(x)
-
-
-def diag(
-    x: np.ndarray,
-    /,
-    *,
-    offset: Optional[int] = 0,
-    padding_value: Optional[float] = 0,
-    align: Optional[str] = "RIGHT_LEFT",
-    num_rows: Optional[int] = None,
-    num_cols: Optional[int] = None,
-    out: Optional[np.ndarray] = None,
-):
-    if num_rows is None:
-        num_rows = len(x)
-    if num_cols is None:
-        num_cols = len(x)
-    ret = np.ones((num_rows, num_cols))
-    ret *= padding_value
-
-    # On the diagonal there will be
-    # 1 * padding_value + x_i - padding_value == x_i
-    ret += np.diag(x - padding_value, k=offset)
-
-    return ret
 
 
 def diagonal(
@@ -106,7 +81,7 @@ def eigvalsh(
     return np.linalg.eigvalsh(x)
 
 
-@_handle_0_dim_output
+@_scalar_output_to_0d_array
 def inner(
     x1: np.ndarray, x2: np.ndarray, *, out: Optional[np.ndarray] = None
 ) -> np.ndarray:
@@ -156,7 +131,7 @@ def matmul(
 matmul.support_native_out = True
 
 
-@_handle_0_dim_output
+@_scalar_output_to_0d_array
 @with_unsupported_dtypes({"1.23.0 and below": ("float16", "bfloat16")}, backend_version)
 def matrix_norm(
     x: np.ndarray,
@@ -187,7 +162,7 @@ def matrix_power(
     },
     backend_version,
 )
-@_handle_0_dim_output
+@_scalar_output_to_0d_array
 def matrix_rank(
     x: np.ndarray,
     /,
@@ -309,7 +284,8 @@ def tensordot(
     return np.tensordot(x1, x2, axes=axes)
 
 
-@_handle_0_dim_output
+@_scalar_output_to_0d_array
+@with_unsupported_dtypes({"1.23.0 and below": ("float16", "bfloat16")}, backend_version)
 def trace(
     x: np.ndarray,
     /,
@@ -322,7 +298,6 @@ def trace(
     return np.trace(x, offset=offset, axis1=axis1, axis2=axis2, out=out)
 
 
-trace.unsupported_dtypes = ("float16", "bfloat16")
 trace.support_native_out = True
 
 
@@ -355,7 +330,28 @@ def vector_norm(
 
 
 # Extra #
-# ------#
+# ----- #
+
+
+def diag(
+    x: np.ndarray,
+    /,
+    *,
+    k: int = 0,
+    out: Optional[np.ndarray] = None,
+) -> np.ndarray:
+    return np.diag(x, k=k)
+
+
+def vander(
+    x: np.ndarray,
+    /,
+    *,
+    N: Optional[int] = None,
+    increasing: bool = False,
+    out: Optional[np.ndarray] = None,
+) -> np.ndarray:
+    return np.vander(x, N=N, increasing=increasing).astype(x.dtype)
 
 
 def vector_to_skew_symmetric_matrix(
@@ -379,17 +375,3 @@ def vector_to_skew_symmetric_matrix(
 
 
 vector_to_skew_symmetric_matrix.support_native_out = True
-
-
-def vander(
-    x: np.ndarray,
-    /,
-    *,
-    N: Optional[int] = None,
-    increasing: Optional[bool] = False,
-    out: Optional[np.ndarray] = None,
-) -> np.ndarray:
-    return np.vander(x, N=N, increasing=increasing).astype(x.dtype)
-
-
-vander.support_native_out = False
